@@ -126,6 +126,7 @@ li button {
     min-height: 40px;
     border: none;
     margin-right: 20px;
+    color: rgb(208, 0, 0);
 }
 
 li button:hover{
