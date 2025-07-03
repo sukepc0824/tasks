@@ -3,7 +3,8 @@
 body {
     font-family: sans-serif;
     background: #f9f9f9;
-    padding: 2rem;
+    padding: 16px;
+    padding-top:30px;
 }
 
 dialog {
@@ -21,7 +22,7 @@ form {
 }
 
 * {
-    font-size: 17px;
+    font-size: 15px;
     font-family: "Geist","Noto Sans JP", sans-serif;
 }
 
@@ -94,12 +95,12 @@ button.primary {
 }
 
 li .limit .v{
-    font-size: 42px;
+    font-size: 38px;
 }
 
 li .limit {
     height: 100px;
-    width: 100px;
+    width: 80px;
     display: flex;
     flex-direction: column;
     justify-content: center;
