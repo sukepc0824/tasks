@@ -95,11 +95,12 @@ button.primary {
 }
 
 li .limit .v{
-    font-size: 38px;
+    font-size: 32px;
 }
 
 li .limit {
-    height: 100px;
+    height: 100%;
+    min-height: 100px;
     width: 80px;
     display: flex;
     flex-direction: column;
@@ -107,6 +108,7 @@ li .limit {
     align-items: center;
     border-right: 1px solid #ccc;
     gap: 2px;
+    flex-shrink: 0;
 }
 
 li .content {
@@ -118,7 +120,7 @@ li .content {
 }
 
 li p.label {
-    font-size: 17px;
+    font-size: 12px !important;
     opacity: 0.6;
 }
 
@@ -136,4 +138,10 @@ li button:hover{
 
 li a{
     opacity: 0.6;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: bottom;
 }
