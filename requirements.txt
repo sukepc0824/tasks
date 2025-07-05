@@ -1,3 +1,4 @@
 flask
 datetime
+flask-sqlalchemy
 gunicorn>=21.2.0
