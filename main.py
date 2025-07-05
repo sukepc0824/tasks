@@ -1,61 +1,59 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, request, jsonify, render_template
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import json
-import os
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
+db = SQLAlchemy(app)
 
-DATA_FILE = 'tasks.json'
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    detail = db.Column(db.String(200), nullable=False)
+    date = db.Column(db.String(10), default=datetime.utcnow().strftime('%Y-%m-%d'))
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def save_data():
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-data = load_data()
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    return jsonify(data)
+    tasks = Task.query.all()
+    return jsonify([{
+        'id': task.id,
+        'name': task.name,
+        'url': task.url,
+        'detail': task.detail,
+        'date': task.date
+    } for task in tasks])
 
 @app.route('/tasks', methods=['POST'])
 def add_task():
-    new_task = request.json
+    data = request.json
+    task = Task(
+        name=data['name'],
+        url=data['url'],
+        detail=data['detail'],
+        date=data.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
+    )
+    db.session.add(task)
+    db.session.commit()
+    return jsonify({"message": "Task added", "task": {
+        "id": task.id,
+        "name": task.name,
+        "url": task.url,
+        "detail": task.detail,
+        "date": task.date
+    }}), 201
 
-    required_fields = {"name", "url", "detail"}
-    if not required_fields.issubset(new_task):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    if "date" not in new_task:
-        new_task["date"] = datetime.utcnow().strftime('%Y-%m-%d')
-    else:
-        try:
-            parsed_date = datetime.strptime(new_task["date"], '%Y-%m-%d')
-            new_task["date"] = parsed_date.strftime('%Y-%m-%d')
-        except ValueError:
-            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
-
-    data.append(new_task)
-    save_data()
-    return jsonify({"message": "Task added successfully", "task": new_task}), 201
-
-@app.route('/tasks/<int:task_index>', methods=['DELETE'])
-def delete_task(task_index):
-    if task_index < 0 or task_index >= len(data):
-        return jsonify({"error": "Task not found"}), 404
-    deleted_task = data.pop(task_index)
-    save_data()
-    return jsonify({"message": "Task deleted successfully", "task": deleted_task}), 200
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({"message": "Task deleted", "task_id": task_id}), 200
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-if __name__ == '__main__':
-    app.run(debug=True)
-    
